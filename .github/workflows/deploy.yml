@@ -1,0 +1,32 @@
+name: Deploy Python App to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          # Pull latest image
+          docker pull your-dockerhub-username/python-app:latest
+          
+          # Remove old container
+          docker stop python-app || true
+          docker rm python-app || true
+          
+          # Run new container
+          docker run -d -p 5000:5000 --name python-app your-dockerhub-username/python-app:latest
+
